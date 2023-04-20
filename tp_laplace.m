@@ -25,23 +25,25 @@ testT=1;
 % Faire le tour de la matrice autant de fois de besoin pour avoir la
 % précision demandé
 iter=0;
+d=0;
 while (testpr>precision)
   testpr=0;
     for i = 1:imax
+        % Initialisation du dy avant (dy1) et après (dy2) cellule 
+        if i < (imax/2) && (i+1) <= (imax/2)
+            dy1=(hauteur*(imax-2)/(imax*2))*(i);
+            dy2=(hauteur*(imax-2)/(imax*2))*(i+1);
+        elseif i <= (imax/2) && (i+1) >= (imax/2)
+            dy1=(hauteur*(imax-2)/(imax*2))*(i);
+            dy2=(hauteur*(imax-2)/(imax*2))*(imax-i);
+        elseif i > (imax/2)
+            dy1=(hauteur*(imax-2)/(imax*2))*(imax-i+1);
+            dy2=(hauteur*(imax-2)/(imax*2))*(imax-i);    
+        end 
+        d=d+dy2;
+
         for j = 1:jmax
             testT = T(i, j);
-            % Initialisation du dy avant et après cellule
-            if i < (imax/2)
-                dy1=(hauteur*2*imax/(imax*imax+imax*2+8))*(i+1);
-                dy2=(hauteur*2*imax/(imax*imax+imax*2+8))*(i+2);
-            elseif i == (imax/2)
-                dy1=(hauteur*2*imax/(imax*imax+imax*2+8))*(i+1);
-                dy2=(hauteur*2*imax/(imax*imax+imax*2+8))*(imax-i);
-            elseif i > (imax/2)
-                dy1=(hauteur*2*imax/(imax*imax+imax*2+8))*(imax-i+1);
-                dy2=(hauteur*2*imax/(imax*imax+imax*2+8))*(imax-i);
-            end
-
 
             if i > 1 && j > 1 && i < imax && j < jmax
                 % Si la cellule n'est pas sur un bord ou un coin
@@ -77,8 +79,8 @@ while (testpr>precision)
     end
     iter=iter+1;
 end
-
+e=-dy2+d/iter;
 T= reshape(T, imax, jmax);
 contourf(T);
 colorbar;
-title(sprintf('Itération = %d',iter));
+title(sprintf('Itération = %d',e)); %remettre iter quand les dy fonctionnerons
