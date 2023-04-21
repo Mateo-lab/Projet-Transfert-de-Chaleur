@@ -1,7 +1,7 @@
 % Définition du nombre de mailles
-    % Nombre de mailles en hauteur
+    % Nombre de noeuds en hauteur
 imax=30;
-    % Nombre de mailles en longueur
+    % Nombre de noeuds en longueur
 jmax=120;
 
 % Initialisation de la matrice T
@@ -43,7 +43,7 @@ while (testpr>precision)
         d=d+dy2;
 
         for j = 1:jmax
-            testT = T(i, j);
+            Told = T(i, j);
 
             if i > 1 && j > 1 && i < imax && j < jmax
                 % Si la cellule n'est pas sur un bord ou un coin
@@ -74,13 +74,19 @@ while (testpr>precision)
                 T(i,j) = (T(i-1,j) + T(i,j-1)) / 2;
             end
 
-            testpr=max(testpr,abs(T(i,j)-testT));
+            % testpr=max(testpr,abs(T(i,j)-Told));
+         
         end
     end
+    testpr=max(testpr,abs(T(i,j)-Told));
+    disp(testpr); %visualitation de l'evolution de testpr dans la consol
     iter=iter+1;
 end
 e=-dy2+d/iter;
-T= reshape(T, imax, jmax);
-contourf(T);
+
+T= reshape(T', imax, jmax);
+%contourf(T);
+pcolor(T);
 colorbar;
+axis equal;
 title(sprintf('Itération = %d',e)); %remettre iter quand les dy fonctionnerons
