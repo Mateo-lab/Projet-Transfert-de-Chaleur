@@ -1,4 +1,4 @@
-% Définition du nombre de mailles
+% Définition du maillage
     % Nombre de noeuds en hauteur
 imax=30;
     % Nombre de noeuds en longueur
@@ -6,16 +6,31 @@ jmax=120;
 
 % Initialisation de la matrice T
 T = zeros(imax,jmax);
+% Température sur la surface extérieur de la vitre
+Tpe = zeros(1,jmax);
 
-hauteur=3;
-largueur=12;
+% Dimension de la surface étudié 
+hauteur=0.005;
+largueur=0.014;
 
 dx=largueur/jmax;
 % Attention, dy est une fonction de i, donc ce trouve dans la boucle
 
-lamda=150;
-h=400;
-Text=900;
+% Caractéristique du problème
+    % Lamda du matériau
+lamda=0.8;
+    % Coéfficient de convection extérieur
+he=11;
+    % Température extérieur
+Te=258;
+    % Coéfficient de convection extérieur
+hi=8;
+    % Température extérieur
+Ti=258;
+    % Température minimum 
+T0=278;
+    % Source
+q=150;
 
 % Paramètre pour la précision et son test
 precision=0.001;
@@ -46,31 +61,37 @@ while (testpr>precision)
 
             if i > 1 && j > 1 && i < imax && j < jmax
                 % Si la cellule n'est pas sur un bord ou un coin
-                T(i,j) = (T(i-1,j) + T(i+1,j) + T(i,j-1) + T(i,j+1)) / 4;
+                T(i,j) = (T(i-1,j)*dx^2*dy2 + T(i+1,j)*dx^2*dy1 + (T(i,j-1)+T(i,j+1))*((dy1+dy2)/2)*dy1*dy2) / (dx^2*dy1 + dx^2*dy2 + dy1^2*dy2 + dy2^2*dy1);
             elseif i == 1 && j > 1 && j < jmax
-                % Si la cellule est sur le bord supérieur
-                T(i,j) = 100;
-            elseif i == imax && j > 1 && j < jmax
                 % Si la cellule est sur le bord inférieur
-                T(i,j) = 200;
+                T(i,j) = (hi*dx^2*dy2*Ti + T(i+1,j)*dx^2*lamda + (T(i,j-1)+T(i,j+1))*(dy2^2/2)*lamda) / (hi*dx^2*dy2 + 2*lamda*dx*dy2);
+            elseif i == imax && j > 1 && j < jmax
+                % Si la cellule est sur le bord supérieur
+                T(i,j) = (he*dx^2*dy1*Te + T(i-1,j)*dx^2*lamda + (T(i,j-1)+T(i,j+1))*(dy1^2/2)*lamda) / (he*dx^2*dy1 + 2*lamda*dx*dy1);
             elseif j == 1 && i > 1 && i < imax
                 % Si la cellule est sur le bord gauche
-                T(i,j) = (T(i-1,j) + T(i+1,j) + T(i,j+1)) / 3;
+                T(i,j) = (T(i-1,j)*dx^2*dy2 + T(i+1,j)*dx^2*dy1 + T(i,j+1)*(dy1+dy2)*dy1*dy2) / (dx^2*dy1 + dx^2*dy2 + dy1^2*dy2 + dy2^2*dy1);
             elseif j == jmax && i > 1 && i < imax
                 % Si la cellule est sur le bord droit
-                T(i,j) = (T(i-1,j) + T(i+1,j) + T(i,j-1)) / 3;
+                T(i,j) = (T(i-1,j)*dx^2*dy2 + T(i+1,j)*dx^2*dy1 + T(i,j-1)*(dy1+dy2)*dy1*dy2) / (dx^2*dy1 + dx^2*dy2 + dy1^2*dy2 + dy2^2*dy1);
             elseif i == 1 && j == 1
-                % Si la cellule est dans le coin supérieur gauche
-                T(i,j) = (T(i+1,j) + T(i,j+1)) / 2;
-            elseif i == 1 && j == jmax
-                % Si la cellule est dans le coin supérieur droit
-                T(i,j) = (T(i+1,j) + T(i,j-1)) / 2;
-            elseif i == imax && j == 1
                 % Si la cellule est dans le coin inférieur gauche
-                T(i,j) = (T(i-1,j) + T(i,j+1)) / 2;
-            elseif i == imax && j == jmax
+                T(i,j) = (hi*dx^2*dy2*Ti + T(i+1,j)*dx^2*lamda + T(i,j+1)*dy2^2*lamda + q*dx*dy2) / (hi*dx^2*dy2 + 2*lamda*dx*dy2);
+            elseif i == 1 && j == jmax
                 % Si la cellule est dans le coin inférieur droit
-                T(i,j) = (T(i-1,j) + T(i,j-1)) / 2;
+                T(i,j) = (hi*dx^2*dy2*Ti + T(i+1,j)*dx^2*lamda + T(i,j-1)*dy2^2*lamda) / (hi*dx^2*dy2 + 2*lamda*dx*dy2);
+            elseif i == imax && j == 1
+                % Si la cellule est dans le coin supérieur gauche
+                T(i,j) = (he*dx^2*dy1*Te + T(i-1,j)*dx^2*lamda + T(i,j+1)*dy1^2*lamda) / (he*dx^2*dy1 + 2*lamda*dx*dy1);
+            elseif i == imax && j == jmax
+                % Si la cellule est dans le coin supérieur droit
+                T(i,j) = (he*dx^2*dy1*Te + T(i-1,j)*dx^2*lamda + T(i,j-1)*dy1^2*lamda) / (he*dx^2*dy1 + 2*lamda*dx*dy1);
+            end
+
+            if i == imax
+                % On regarde les températures sur la surface éxtérieur de
+                % la vitre
+                Tpe(1,j)=T(i,j);
             end
 
             testpr=max(testpr,abs(T(i,j)-testT));
@@ -79,7 +100,20 @@ while (testpr>precision)
     iter=iter+1;
 end
 
-T= reshape(T, imax, jmax);
-contourf(T);
+% Affichage de la température sur la vitre extérieur
+plot(Tpe);
+
+% Affichage des température en tout point
+imagesc(T);
 colorbar;
-title(sprintf('Itération = %d',iter)); 
+
+%T= reshape(T, imax, jmax);
+%contourf(T);
+%colorbar;
+
+% Vérification de la température minimum
+if T(imax,jmax) >= T0
+    title(sprintf('Itération = %d, Température minimum respecté',iter)); 
+else
+    title(sprintf('Itération = %d, Température minimum non respecté',iter)); 
+end
