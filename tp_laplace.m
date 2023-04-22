@@ -17,8 +17,8 @@ dx=largueur/jmax;
 % Attention, dy est une fonction de i, donc ce trouve dans la boucle
 
 % Caractéristique du problème
-    % Lamda du matériau
-lamda=0.8;
+    % Coefficient de conductivité du matériau
+k=0.8;
     % Coéfficient de convection extérieur
 he=11;
     % Température extérieur
@@ -30,10 +30,10 @@ Ti=258;
     % Température minimum 
 T0=278;
     % Source
-q=150;
+q=0;
 
 % Paramètre pour la précision et son test
-precision=0.001;
+precision=0.00001;
 testpr=1;
 testT=1;
 
@@ -43,7 +43,7 @@ iter=0;
 while (testpr>precision)
   testpr=0;
     for i = 1:imax
-        % Initialisation du dy avant (dy1) et après (dy2) cellule 
+        % Initialisation du dy avant (dy1) et après (dy2) maille 
         if (i+1) < (1+imax/2)
             dy1=(hauteur*4/(imax^2))*(i-1);
             dy2=(hauteur*4/(imax^2))*(i);
@@ -62,30 +62,39 @@ while (testpr>precision)
             if i > 1 && j > 1 && i < imax && j < jmax
                 % Si la cellule n'est pas sur un bord ou un coin
                 T(i,j) = (T(i-1,j)*dx^2*dy2 + T(i+1,j)*dx^2*dy1 + (T(i,j-1)+T(i,j+1))*((dy1+dy2)/2)*dy1*dy2) / (dx^2*dy1 + dx^2*dy2 + dy1^2*dy2 + dy2^2*dy1);
+                %T(i,j) = (T(i-1,j) + T(i+1,j) + T(i,j-1) + T(i,j+1)) / 4;
             elseif i == 1 && j > 1 && j < jmax
-                % Si la cellule est sur le bord inférieur
-                T(i,j) = (hi*dx^2*dy2*Ti + T(i+1,j)*dx^2*lamda + (T(i,j-1)+T(i,j+1))*(dy2^2/2)*lamda) / (hi*dx^2*dy2 + 2*lamda*dx*dy2);
-            elseif i == imax && j > 1 && j < jmax
                 % Si la cellule est sur le bord supérieur
-                T(i,j) = (he*dx^2*dy1*Te + T(i-1,j)*dx^2*lamda + (T(i,j-1)+T(i,j+1))*(dy1^2/2)*lamda) / (he*dx^2*dy1 + 2*lamda*dx*dy1);
+                %T(i,j) = (he*dx^2*dy2*Te + T(i+1,j)*dx^2*k + (T(i,j-1)+T(i,j+1))*(dy2^2/2)*k) / (he*dx^2*dy2 + 2*k*dx*dy2);
+                T(i,j) = (Ti + T(i+1,j) + T(i,j-1) + T(i,j+1)) / 4;
+            elseif i == imax && j > 1 && j < jmax
+                % Si la cellule est sur le bord inférieur
+                %T(i,j) = (hi*dx^2*dy1*Ti + T(i-1,j)*dx^2*k + (T(i,j-1)+T(i,j+1))*(dy1^2/2)*k) / (hi*dx^2*dy1 + 2*k*dx*dy1);
+                T(i,j) = (T(i-1,j) + Te + T(i,j-1) + T(i,j+1)) / 4;
             elseif j == 1 && i > 1 && i < imax
                 % Si la cellule est sur le bord gauche
                 T(i,j) = (T(i-1,j)*dx^2*dy2 + T(i+1,j)*dx^2*dy1 + T(i,j+1)*(dy1+dy2)*dy1*dy2) / (dx^2*dy1 + dx^2*dy2 + dy1^2*dy2 + dy2^2*dy1);
+                %T(i,j) = (T(i-1,j) + T(i+1,j) + 2*T(i,j+1)) / 4;
             elseif j == jmax && i > 1 && i < imax
                 % Si la cellule est sur le bord droit
                 T(i,j) = (T(i-1,j)*dx^2*dy2 + T(i+1,j)*dx^2*dy1 + T(i,j-1)*(dy1+dy2)*dy1*dy2) / (dx^2*dy1 + dx^2*dy2 + dy1^2*dy2 + dy2^2*dy1);
+                %T(i,j) = (T(i-1,j) + T(i+1,j) + 2*T(i,j-1)) / 4;
             elseif i == 1 && j == 1
-                % Si la cellule est dans le coin inférieur gauche
-                T(i,j) = (hi*dx^2*dy2*Ti + T(i+1,j)*dx^2*lamda + T(i,j+1)*dy2^2*lamda + q*dx*dy2) / (hi*dx^2*dy2 + 2*lamda*dx*dy2);
-            elseif i == 1 && j == jmax
-                % Si la cellule est dans le coin inférieur droit
-                T(i,j) = (hi*dx^2*dy2*Ti + T(i+1,j)*dx^2*lamda + T(i,j-1)*dy2^2*lamda) / (hi*dx^2*dy2 + 2*lamda*dx*dy2);
-            elseif i == imax && j == 1
                 % Si la cellule est dans le coin supérieur gauche
-                T(i,j) = (he*dx^2*dy1*Te + T(i-1,j)*dx^2*lamda + T(i,j+1)*dy1^2*lamda) / (he*dx^2*dy1 + 2*lamda*dx*dy1);
-            elseif i == imax && j == jmax
+                %T(i,j) = (he*dx^2*dy2*Te + T(i+1,j)*dx^2*k + T(i,j+1)*dy2^2*k) / (he*dx^2*dy2 + 2*k*dx*dy2);
+                T(i,j) = (Ti + T(i+1,j) + 2*T(i,j+1)) / 4;
+            elseif i == 1 && j == jmax
                 % Si la cellule est dans le coin supérieur droit
-                T(i,j) = (he*dx^2*dy1*Te + T(i-1,j)*dx^2*lamda + T(i,j-1)*dy1^2*lamda) / (he*dx^2*dy1 + 2*lamda*dx*dy1);
+                %T(i,j) = (he*dx^2*dy2*Te + T(i+1,j)*dx^2*k + T(i,j-1)*dy2^2*k) / (he*dx^2*dy2 + 2*k*dx*dy2);
+                T(i,j) = (Ti + T(i+1,j) + 2*T(i,j-1)) / 4;
+            elseif i == imax && j == 1
+                % Si la cellule est dans le coin inférieur gauche
+                %T(i,j) = (hi*dx^2*dy1*Ti + T(i-1,j)*dx^2*k + T(i,j+1)*dy1^2*k + q*dx*dy2) / (hi*dx^2*dy1 + 2*k*dx*dy1);
+                T(i,j) = (T(i-1,j) + Te + 2*T(i,j+1) + q) / 4;
+            elseif i == imax && j == jmax
+                % Si la cellule est dans le coin inférieur droit
+                %T(i,j) = (hi*dx^2*dy1*Ti + T(i-1,j)*dx^2*k + T(i,j-1)*dy1^2*k) / (hi*dx^2*dy1 + 2*k*dx*dy1);
+                T(i,j) = (T(i-1,j) + Te + 2*T(i,j-1)) / 4;
             end
 
             if i == imax
