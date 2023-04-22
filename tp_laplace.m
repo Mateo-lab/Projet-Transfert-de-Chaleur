@@ -10,8 +10,8 @@ T = zeros(imax,jmax);
 Tpe = zeros(1,jmax);
 
 % Dimension de la surface étudié 
-hauteur=0.005;
-largueur=0.014;
+hauteur=0.005;  %epaisseur de la vitre
+largueur=0.014;  %espace entre chaque source
 
 dx=largueur/jmax;
 % Attention, dy est une fonction de i, donc ce trouve dans la boucle
@@ -25,7 +25,7 @@ he=11;
 Te=258;
     % Coéfficient de convection extérieur
 hi=8;
-    % Température extérieur
+    % Température intérieur
 Ti=258;
     % Température minimum 
 T0=278;
@@ -33,7 +33,7 @@ T0=278;
 q=0;
 
 % Paramètre pour la précision et son test
-precision=0.00001;
+precision=0.1;
 testpr=1;
 testT=1;
 
@@ -104,6 +104,7 @@ while (testpr>precision)
             end
 
             testpr=max(testpr,abs(T(i,j)-testT));
+            %disp(testpr); %affichage console pour le debug
         end
     end
     iter=iter+1;
@@ -113,12 +114,12 @@ end
 plot(Tpe);
 
 % Affichage des température en tout point
-imagesc(T);
-colorbar;
 
-%T= reshape(T, imax, jmax);
-%contourf(T);
-%colorbar;
+colormap(jet); %choix de la palette de couleur : "jet"
+imagesc(T); %affichage sans la grille
+%contourf(T); %affichage avec les courbes de températures
+colorbar;
+axis equal;
 
 % Vérification de la température minimum
 if T(imax,jmax) >= T0
