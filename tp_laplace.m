@@ -10,9 +10,9 @@ T = zeros(imax,jmax);
 % Température sur la surface extérieur de la vitre
 Tpe = zeros(1,jmax);
 
-% Dimension de la surface étudié 
-hauteur=0.005;
-largueur=0.014;
+% Dimension de la surface étudié en mètre
+hauteur=0.005; %épaisseur de la vitre
+largueur=0.014; %moitié de la distane entre deux source
 
 dx=largueur/jmax;
 % Attention, dy est une fonction de i, donc ce trouve dans la boucle
