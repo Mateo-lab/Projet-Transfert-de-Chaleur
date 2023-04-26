@@ -1,5 +1,4 @@
-%!Test line! delete when debugued
-
+format longG
 % Définition du maillage
     % Nombre de noeuds en hauteur
 imax=30;
@@ -12,8 +11,8 @@ T = zeros(imax,jmax);
 Tpe = zeros(1,jmax);
 
 % Dimension de la surface étudié 
-hauteur=0.005;  %epaisseur de la vitre
-largueur=0.014;  %espace entre chaque source
+hauteur=0.005;
+largueur=0.014;
 
 dx=largueur/jmax;
 % Attention, dy est une fonction de i, donc ce trouve dans la boucle
@@ -27,15 +26,21 @@ he=11;
 Te=258;
     % Coéfficient de convection extérieur
 hi=8;
-    % Température intérieur
+    % Température extérieur
 Ti=258;
     % Température minimum 
 T0=278;
     % Source
-q=0;
+q=10;
+
+% Coefficient intermédiaire
+    % Nombre de Biot supérieur
+Biote=he*dx/k;
+    % Nombre de Biot inférieur
+Bioti=hi*dx/k;
 
 % Paramètre pour la précision et son test
-precision=0.1;
+precision=0.000001;
 testpr=1;
 testT=1;
 
@@ -56,7 +61,7 @@ while (testpr>precision)
             dy1=(hauteur*4/(imax^2))*(imax-i+1);
             dy2=(hauteur*4/(imax^2))*(imax-i);
         end 
-        
+
 
         for j = 1:jmax
             testT = T(i, j);
@@ -67,12 +72,12 @@ while (testpr>precision)
                 %T(i,j) = (T(i-1,j) + T(i+1,j) + T(i,j-1) + T(i,j+1)) / 4;
             elseif i == 1 && j > 1 && j < jmax
                 % Si la cellule est sur le bord supérieur
-                %T(i,j) = (he*dx^2*dy2*Te + T(i+1,j)*dx^2*k + (T(i,j-1)+T(i,j+1))*(dy2^2/2)*k) / (he*dx^2*dy2 + 2*k*dx*dy2);
-                T(i,j) = (Ti + T(i+1,j) + T(i,j-1) + T(i,j+1)) / 4;
+                T(i,j) = (Biote*Te + T(i+1,j)*dx/dy2 + (T(i,j-1)+T(i,j+1))*dy2/(2*dx)) / (Biote + 2);
+                %T(i,j) = (Ti + T(i+1,j) + T(i,j-1) + T(i,j+1)) / 4;
             elseif i == imax && j > 1 && j < jmax
                 % Si la cellule est sur le bord inférieur
-                %T(i,j) = (hi*dx^2*dy1*Ti + T(i-1,j)*dx^2*k + (T(i,j-1)+T(i,j+1))*(dy1^2/2)*k) / (hi*dx^2*dy1 + 2*k*dx*dy1);
-                T(i,j) = (T(i-1,j) + Te + T(i,j-1) + T(i,j+1)) / 4;
+                T(i,j) = (Bioti*Ti + T(i-1,j)*dx/dy1 + (T(i,j-1)+T(i,j+1))*dy1/(2*dx)) / (Bioti + 2);
+                %T(i,j) = (T(i-1,j) + Te + T(i,j-1) + T(i,j+1)) / 4;
             elseif j == 1 && i > 1 && i < imax
                 % Si la cellule est sur le bord gauche
                 T(i,j) = (T(i-1,j)*dx^2*dy2 + T(i+1,j)*dx^2*dy1 + T(i,j+1)*(dy1+dy2)*dy1*dy2) / (dx^2*dy1 + dx^2*dy2 + dy1^2*dy2 + dy2^2*dy1);
@@ -83,30 +88,29 @@ while (testpr>precision)
                 %T(i,j) = (T(i-1,j) + T(i+1,j) + 2*T(i,j-1)) / 4;
             elseif i == 1 && j == 1
                 % Si la cellule est dans le coin supérieur gauche
-                %T(i,j) = (he*dx^2*dy2*Te + T(i+1,j)*dx^2*k + T(i,j+1)*dy2^2*k) / (he*dx^2*dy2 + 2*k*dx*dy2);
-                T(i,j) = (Ti + T(i+1,j) + 2*T(i,j+1)) / 4;
+                T(i,j) = (Biote*Te + T(i+1,j)*dx/dy2 + T(i,j+1)*dy2/dx) / (Biote + 2);
+                %T(i,j) = (Ti + T(i+1,j) + 2*T(i,j+1)) / 4;
             elseif i == 1 && j == jmax
                 % Si la cellule est dans le coin supérieur droit
-                %T(i,j) = (he*dx^2*dy2*Te + T(i+1,j)*dx^2*k + T(i,j-1)*dy2^2*k) / (he*dx^2*dy2 + 2*k*dx*dy2);
-                T(i,j) = (Ti + T(i+1,j) + 2*T(i,j-1)) / 4;
+                T(i,j) = (Biote*Te + T(i+1,j)*dx/dy2 + T(i,j-1)*dy2/dx) / (Biote + 2);
+                %T(i,j) = (Ti + T(i+1,j) + 2*T(i,j-1)) / 4;
             elseif i == imax && j == 1
                 % Si la cellule est dans le coin inférieur gauche
-                %T(i,j) = (hi*dx^2*dy1*Ti + T(i-1,j)*dx^2*k + T(i,j+1)*dy1^2*k + q*dx*dy2) / (hi*dx^2*dy1 + 2*k*dx*dy1);
-                T(i,j) = (T(i-1,j) + Te + 2*T(i,j+1) + q) / 4;
+                T(i,j) = (Bioti*Ti + T(i-1,j)*dx/dy1 + T(i,j+1)*dy1/dx + q/k) / (Bioti + 2);
+                %T(i,j) = (T(i-1,j) + Te + 2*T(i,j+1) + q) / 4;
             elseif i == imax && j == jmax
                 % Si la cellule est dans le coin inférieur droit
-                %T(i,j) = (hi*dx^2*dy1*Ti + T(i-1,j)*dx^2*k + T(i,j-1)*dy1^2*k) / (hi*dx^2*dy1 + 2*k*dx*dy1);
-                T(i,j) = (T(i-1,j) + Te + 2*T(i,j-1)) / 4;
+                T(i,j) = (Bioti*Ti + T(i-1,j)*dx/dy1 + T(i,j-1)*dy1/dx) / (Bioti + 2);
+                %T(i,j) = (T(i-1,j) + Te + 2*T(i,j-1)) / 4;
             end
 
-            if i == imax
+            if i == 1
                 % On regarde les températures sur la surface éxtérieur de
                 % la vitre
                 Tpe(1,j)=T(i,j);
             end
 
             testpr=max(testpr,abs(T(i,j)-testT));
-            %disp(testpr); %affichage console pour le debug
         end
     end
     iter=iter+1;
@@ -121,7 +125,7 @@ colormap(jet); %choix de la palette de couleur : "jet"
 imagesc(T); %affichage sans la grille
 %contourf(T); %affichage avec les courbes de températures
 colorbar;
-axis equal;
+%axis equal; %mettre la même echelle pour les deux axes
 
 % Vérification de la température minimum
 if T(imax,jmax) >= T0
@@ -129,3 +133,6 @@ if T(imax,jmax) >= T0
 else
     title(sprintf('Itération = %d, Température minimum non respecté',iter)); 
 end
+% affichage de la matrice avec les temperatures exactes
+
+disp(T)
