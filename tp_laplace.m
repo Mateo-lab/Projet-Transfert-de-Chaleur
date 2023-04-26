@@ -1,3 +1,5 @@
+%!Test line! delete when debugued
+
 % Définition du maillage
     % Nombre de noeuds en hauteur
 imax=30;
