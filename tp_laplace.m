@@ -61,7 +61,10 @@ while (testpr>precision)
             dy1=(hauteur*4/(imax^2))*(imax-i+1);
             dy2=(hauteur*4/(imax^2))*(imax-i);
         end 
-
+        % dy1 représente la distance entre la maille et celle juste au-dessus (la précédante), pour la première maille, celle distance vaut 0 mais il n'y a pas de précédante, ce n'est donc pas un prblème
+        % dy2 de la même manière est la distance entre le maille et celle au-dessous (la suivante), dy2 pour la dernière maille vaut 0, plus de maille suivante
+        % L'évolution des dy est linéaire croissante jusqu'à la moitié puis décroissante de pente opposé après la moitié 
+        
 
         for j = 1:jmax
             testT = T(i, j);
