@@ -1,3 +1,4 @@
 # Projet-Transfert-de-Chaleur
 Ce documents est un code partagé du projet de transfert de chaleur de Bac 3 
-test branche new features
+Attention nous avons un probleme de valeurs infinies dans la matrice 
+Et nous n'avons pas encore mis en place l'algorithme de Thomas 
