@@ -31,7 +31,7 @@ Ti=258;
     % Température minimum 
 T0=278;
     % Source
-q=10;
+q=15;
 
 % Coefficient intermédiaire
     % Nombre de Biot supérieur
@@ -75,11 +75,17 @@ while (testpr>precision)
                 %T(i,j) = (T(i-1,j) + T(i+1,j) + T(i,j-1) + T(i,j+1)) / 4;
             elseif i == 1 && j > 1 && j < jmax
                 % Si la cellule est sur le bord supérieur
-                T(i,j) = (Biote*Te + T(i+1,j)*dx/dy2 + (T(i,j-1)+T(i,j+1))*dy2/(2*dx)) / (Biote + 2);
+                %T(i,j) = (Biote*Te + T(i+1,j)*dx/dy2 + (T(i,j-1)+T(i,j+1))*dy2/(2*dx)) / (Biote + 2);
+
+                T(i,j)=(((dy2/(2*dx))*T(i,j-1))+((dy2/(2*dx))*T(i,j+1))+((dx/dy2)*T(i+1,j))+(((he*dx)/k)*Te)) /(((he*dx)/k)+(dy2/dx)+(dx/dy2));
+         
                 %T(i,j) = (Ti + T(i+1,j) + T(i,j-1) + T(i,j+1)) / 4;
             elseif i == imax && j > 1 && j < jmax
                 % Si la cellule est sur le bord inférieur
-                T(i,j) = (Bioti*Ti + T(i-1,j)*dx/dy1 + (T(i,j-1)+T(i,j+1))*dy1/(2*dx)) / (Bioti + 2);
+                %T(i,j) = (Bioti*Ti + T(i-1,j)*dx/dy1 + (T(i,j-1)+T(i,j+1))*dy1/(2*dx)) / (Bioti + 2);
+
+                T(i,j)=(((dy1/(2*dx))*T(i,j-1))+((dy1/(2*dx))*T(i,j+1))+((dx/dy1)*T(i-1,j))+(((hi*dx)/k)*Ti)) /(((hi*dx)/k)+(dy1/dx)+(dx/dy1));
+
                 %T(i,j) = (T(i-1,j) + Te + T(i,j-1) + T(i,j+1)) / 4;
             elseif j == 1 && i > 1 && i < imax
                 % Si la cellule est sur le bord gauche
@@ -91,19 +97,31 @@ while (testpr>precision)
                 %T(i,j) = (T(i-1,j) + T(i+1,j) + 2*T(i,j-1)) / 4;
             elseif i == 1 && j == 1
                 % Si la cellule est dans le coin supérieur gauche
-                T(i,j) = (Biote*Te + T(i+1,j)*dx/dy2 + T(i,j+1)*dy2/dx) / (Biote + 2);
+                %T(i,j) = (Biote*Te + T(i+1,j)*dx/dy2 + T(i,j+1)*dy2/dx) / (Biote + 2);
+
+                T(i,j)=(((dy2/dx)*T(i,j+1))+((dx/dy2)*T(i+1,j))+(((he*dx)/k)*Te)) /(((he*dx)/k)+(dy2/dx)+(dx/dy2));
+
                 %T(i,j) = (Ti + T(i+1,j) + 2*T(i,j+1)) / 4;
             elseif i == 1 && j == jmax
                 % Si la cellule est dans le coin supérieur droit
-                T(i,j) = (Biote*Te + T(i+1,j)*dx/dy2 + T(i,j-1)*dy2/dx) / (Biote + 2);
+                %T(i,j) = (Biote*Te + T(i+1,j)*dx/dy2 + T(i,j-1)*dy2/dx) / (Biote + 2);
+
+                T(i,j)=(((dy2/dx)*T(i,j-1))+((dx/dy2)*T(i+1,j))+(((he*dx)/k)*Te)) /(((he*dx)/k)+(dy2/dx)+(dx/dy2));
+
                 %T(i,j) = (Ti + T(i+1,j) + 2*T(i,j-1)) / 4;
             elseif i == imax && j == 1
                 % Si la cellule est dans le coin inférieur gauche
-                T(i,j) = (Bioti*Ti + T(i-1,j)*dx/dy1 + T(i,j+1)*dy1/dx + q/k) / (Bioti + 2);
+                %T(i,j) = (Bioti*Ti + T(i-1,j)*dx/dy1 + T(i,j+1)*dy1/dx + q/k) / (Bioti + 2);
+
+                T(i,j)=(((dy1/dx)*T(i,j+1))+((dx/dy1)*T(i-1,j))+(((hi*dx)/k)*Ti+(q/k))) /(((hi*dx)/k)+(dy1/dx)+(dx/dy1));
+
                 %T(i,j) = (T(i-1,j) + Te + 2*T(i,j+1) + q) / 4;
             elseif i == imax && j == jmax
                 % Si la cellule est dans le coin inférieur droit
-                T(i,j) = (Bioti*Ti + T(i-1,j)*dx/dy1 + T(i,j-1)*dy1/dx) / (Bioti + 2);
+                %T(i,j) = (Bioti*Ti + T(i-1,j)*dx/dy1 + T(i,j-1)*dy1/dx) / (Bioti + 2);
+
+                T(i,j)=(((dy1/dx)*T(i,j-1))+((dx/dy1)*T(i-1,j))+(((hi*dx)/k)*Ti)) /(((hi*dx)/k)+(dy1/dx)+(dx/dy1));
+
                 %T(i,j) = (T(i-1,j) + Te + 2*T(i,j-1)) / 4;
             end
 
@@ -138,4 +156,4 @@ else
 end
 % affichage de la matrice avec les temperatures exactes
 
-disp(T)
+%disp(T)
