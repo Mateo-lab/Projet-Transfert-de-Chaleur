@@ -30,8 +30,8 @@ hi=8;
 Ti=258;
     % Température minimum 
 T0=278;
-    % Source
-q=15;
+    % Source q = Puissance de la source / la longueur de fils
+q=410/33; 
 
 % Coefficient intermédiaire
     % Nombre de Biot supérieur
@@ -146,10 +146,10 @@ colormap(jet); %choix de la palette de couleur : "jet"
 imagesc(T); %affichage sans la grille
 %contourf(T); %affichage avec les courbes de températures
 colorbar;
-%axis equal; %mettre la même echelle pour les deux axes
+axis equal; %mettre la même echelle pour les deux axes
 
 % Vérification de la température minimum
-if T(imax,jmax) >= T0
+if T(1,jmax) >= T0 %T(1,jmax) represente la T° en haut à droite, car 1ère ligne et jème colonne
     title(sprintf('Itération = %d, Température minimum respecté',iter)); 
 else
     title(sprintf('Itération = %d, Température minimum non respecté',iter)); 
