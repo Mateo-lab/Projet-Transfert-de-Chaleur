@@ -1,4 +1,5 @@
-format longG
+%test banche thomas
+format longG 
 % Définition du maillage
     % Nombre de noeuds en hauteur
 imax=30;
