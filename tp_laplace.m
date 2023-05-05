@@ -138,11 +138,14 @@ while (testpr>precision)
     iter=iter+1;
 end
 
+% Calcul des gradients de la température en x et y
+[qx, qy] = gradient(-k * flipud(T));
+
 % Affichage de la température sur la vitre extérieur
 plot(Tpe);
 
 % Affichage des température en tout point
-
+subplot(2, 1, 1); % Mettre plusieurs sous graphiques dans la même fenêtre, ici le 1
 colormap(jet); %choix de la palette de couleur : "jet"
 imagesc(T); %affichage sans la grille
 %contourf(T); %affichage avec les courbes de températures
@@ -155,6 +158,14 @@ if T(1,jmax) >= T0 %T(1,jmax) represente la T° en haut à droite, car 1ère lig
 else
     title(sprintf('Itération = %d, Température minimum non respecté',iter)); 
 end
-% affichage de la matrice avec les temperatures exactes
+
+% Affichage flux de chaleur
+subplot(2, 1, 2); % Mettre plusieurs sous graphiques dans la même fenêtre, ici le 2
+contour(flipud(T)); % Tracer les courbes de niveaux de la matrice T
+hold on;
+quiver(qx, qy); % Tracer les vecteurs de flux de chaleur représentés par les composantes qx et qy
+title('Flux de chaleur et isotherme');
+
+%Affichage de la matrice avec les temperatures exactes
 
 %disp(T)
