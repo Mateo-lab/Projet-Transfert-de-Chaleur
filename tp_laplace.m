@@ -52,17 +52,21 @@ while (testpr>precision)
   % Première ligne, on fixe d'abord pour le premier point puis une boucle
   % pour les autres
   i=1;
+  j=1;
   
   dy2=(hauteur*4/(imax^2))*(i);
-  
-  for j = 1:jmax-1
+
+  % Les expression ne sont pas exactement les memes pour les bords
+  y(j+1)=-(dy2/dx)/(((he*dx)/k)+(dy2/dx)+(dx/dy2));
+  b(j+1)=(((dx/dy2)*T(i+1,j))+(((he*dx)/k)*Te))/(((he*dx)/k)+(dy2/dx)+(dx/dy2));
+  for j = 2:jmax-1
       y(j+1)=-(dy2/2*dx)/((dy2/2*dx)*y(j)+((he*dx)/k)+(dy2/dx)+(dx/dy2));
       b(j+1)=(((dx/dy2)*T(i+1,j))+(((he*dx)/k)*Te)-(dy2/2*dx)*b(j))/((dy2/2*dx)*y(j)+((he*dx)/k)+(dy2/dx)+(dx/dy2));
   end
   testT=T(i,jmax);
-  T(i,jmax)=(((dy2/dx)*T(i,jmax-1))+((dx/dy2)*T(i+1,jmax))+(((he*dx)/k)*Te)) /(((he*dx)/k)+(dy2/dx)+(dx/dy2));
+  T(i,jmax)=(((dx/dy2)*T(i+1,jmax))+(((he*dx)/k)*Te)-(dy2/dx)*b(jmax))/((dy2/dx)*y(jmax)+((he*dx)/k)+(dy2/dx)+(dx/dy2));
   testpr=max(testpr,abs(T(i,jmax)-testT));
-  for j = jmax:2
+  for j = jmax:-1:2
       testT=T(i,j-1);
       T(i,j-1)=y(j)*T(i,j)+b(j);
       testpr=max(testpr,abs(T(i,j-1)-testT));
@@ -86,14 +90,18 @@ while (testpr>precision)
       % dy1 représente la distance entre la maille et celle juste au-dessus (la précédante), pour la première maille, celle distance vaut 0 mais il n'y a pas de précédante, ce n'est donc pas un prblème
       % dy2 de la même manière est la distance entre le maille et celle au-dessous (la suivante), dy2 pour la dernière maille vaut 0, plus de maille suivante
       % L'évolution des dy est linéaire croissante jusqu'à la moitié puis décroissante de pente opposé après la moitié 
-      for j = 1:jmax-1      
-          y(j+1)=-(((dy1+dy2)/2)*dy1*dy2)/((((dy1+dy2)/2)*dy1*dy2)*y(j)+dx^2*dy1 + dx^2*dy2 + dy1^2*dy2 + dy2^2*dy1);      
-          b(j+1)=(T(i-1,j)*dx^2*dy2 + T(i+1,j)*dx^2*dy1-(((dy1+dy2)/2)*dy1*dy2)*b(j))/((((dy1+dy2)/2)*dy1*dy2)*y(j)+dx^2*dy1 + dx^2*dy2 + dy1^2*dy2 + dy2^2*dy1);
+      
+      j=1;
+      y(j+1)=-((dy1+dy2)/dx)/((dx/dy1) + (dx/dy2) + ((dy1+dy2)/dx));      
+      b(j+1)=(T(i-1,j)*(dx/dy1) + T(i+1,j)*(dx/dy2))/((dx/dy1) + (dx/dy2) + ((dy1+dy2)/dx));
+      for j = 2:jmax-1      
+          y(j+1)=-(((dy1+dy2)/2*dx))/(((dy1+dy2)/2*dx)*y(j) + (dx/dy1) + (dx/dy2) + ((dy1+dy2)/dx));      
+          b(j+1)=(T(i-1,j)*(dx/dy1) + T(i+1,j)*(dx/dy2)-((dy1+dy2)/2*dx)*b(j))/(((dy1+dy2)/2*dx)*y(j) + (dx/dy1) + (dx/dy2) + ((dy1+dy2)/dx));
       end
       testT=T(i,jmax);
-      T(i,j) = (T(i-1,j)*dx^2*dy2 + T(i+1,j)*dx^2*dy1 + T(i,j-1)*(dy1+dy2)*dy1*dy2) / (dx^2*dy1 + dx^2*dy2 + dy1^2*dy2 + dy2^2*dy1);
+      T(i,jmax) = (T(i-1,jmax)*(dx/dy1) + T(i+1,jmax)*(dx/dy2)-((dy1+dy2)/dx)*b(jmax))/(((dy1+dy2)/dx)*y(jmax) + (dx/dy1) + (dx/dy2) + ((dy1+dy2)/dx));
       testpr=max(testpr,abs(T(i,jmax)-testT));
-      for j = jmax:2
+      for j = jmax:-1:2
           testT=T(i,j-1);
           T(i,j-1)=y(j)*T(i,j)+b(j);
           testpr=max(testpr,abs(T(i,j-1)-testT));
@@ -104,21 +112,20 @@ while (testpr>precision)
 
   % La dernière ligne
   i=imax;
+  j=1;
   
   dy1=(hauteur*4/(imax^2))*(imax-i+1);  
-  % Comme il y a une source, le terme b(2) doit être initialisé au
-  % préalable
-  j=1;
-  y(j+1)=-(dy1/2*dx)/((dy1/2*dx)*y(j)+((hi*dx)/k)+(dy1/dx)+(dx/dy1));
-  b(j+1)=(((dx/dy1)*T(i-1,j))+(((hi*dx)/k)*Ti+(q/k))-(dy1/2*dx)*b(j))/((dy1/2*dx)*y(j)+((hi*dx)/k)+(dy1/dx)+(dx/dy1));
+  
+  y(j+1)=-(dy1/dx)/(((hi*dx)/k)+(dy1/dx)+(dx/dy1));
+  b(j+1)=(((dx/dy1)*T(i-1,j))+(((hi*dx)/k)*Ti+(q/k)))/(((hi*dx)/k)+(dy1/dx)+(dx/dy1));
   for j = 2:jmax-1
       y(j+1)=-(dy1/2*dx)/((dy1/2*dx)*y(j)+((hi*dx)/k)+(dy1/dx)+(dx/dy1));
       b(j+1)=(((dx/dy1)*T(i-1,j))+(((hi*dx)/k)*Ti)-(dy1/2*dx)*b(j))/((dy1/2*dx)*y(j)+((hi*dx)/k)+(dy1/dx)+(dx/dy1));
   end
   testT=T(i,jmax);
-  T(i,jmax)=(((dy1/dx)*T(i,jmax-1))+((dx/dy1)*T(i-1,jmax))+(((hi*dx)/k)*Ti)) /(((hi*dx)/k)+(dy1/dx)+(dx/dy1));
+  T(i,jmax)=(((dx/dy1)*T(i-1,jmax))+(((hi*dx)/k)*Ti)-(dy1/dx)*b(jmax))/((dy1/dx)*y(jmax)+((hi*dx)/k)+(dy1/dx)+(dx/dy1));
   testpr=max(testpr,abs(T(i,jmax)-testT));
-  for j = jmax:2
+  for j = jmax:-1:2
       testT=T(i,j-1);
       T(i,j-1)=y(j)*T(i,j)+b(j);
       testpr=max(testpr,abs(T(i,j-1)-testT));
