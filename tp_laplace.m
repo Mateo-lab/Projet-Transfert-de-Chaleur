@@ -14,9 +14,12 @@ Tpe = zeros(1,jmax);
 % Dimension de la surface étudié en mètre
 hauteur=0.005; %épaisseur de la vitre
 largueur=0.014; %moitié de la distane entre deux source
-
 dx=largueur/jmax;
 % Attention, dy est une fonction de i, donc ce trouve dans la boucle
+
+%Initialisation vecteurs positions
+X = dx:dx:largueur; %contient les valeurs pour
+Y = 1:imax;
 
 % Caractéristique du problème
     % Coefficient de conductivité du matériau
@@ -50,6 +53,7 @@ testT=1;
 iter=0;
 while (testpr>precision)
   testpr=0;
+  LargeurTampon = 0.005; %permet de créer la matrice Y
     for i = 1:imax
         % Initialisation du dy avant (dy1) et après (dy2) maille 
         if (i+1) < (1+imax/2)
@@ -61,7 +65,11 @@ while (testpr>precision)
         elseif i > (1+imax/2)
             dy1=(hauteur*4/(imax^2))*(imax-i+1);
             dy2=(hauteur*4/(imax^2))*(imax-i);
-        end 
+        end
+        LargeurTampon = LargeurTampon - dy1;
+        Y(i) = LargeurTampon;
+        
+
         % dy1 représente la distance entre la maille et celle juste au-dessus (la précédante), pour la première maille, celle distance vaut 0 mais il n'y a pas de précédante, ce n'est donc pas un prblème
         % dy2 de la même manière est la distance entre le maille et celle au-dessous (la suivante), dy2 pour la dernière maille vaut 0, plus de maille suivante
         % L'évolution des dy est linéaire croissante jusqu'à la moitié puis décroissante de pente opposé après la moitié 
@@ -69,7 +77,6 @@ while (testpr>precision)
 
         for j = 1:jmax
             testT = T(i, j);
-
             if i > 1 && j > 1 && i < imax && j < jmax
                 % Si la cellule n'est pas sur un bord ou un coin
                 T(i,j) = (T(i-1,j)*dx^2*dy2 + T(i+1,j)*dx^2*dy1 + (T(i,j-1)+T(i,j+1))*((dy1+dy2)/2)*dy1*dy2) / (dx^2*dy1 + dx^2*dy2 + dy1^2*dy2 + dy2^2*dy1);
@@ -138,6 +145,7 @@ while (testpr>precision)
     iter=iter+1;
 end
 
+
 % Calcul des gradients de la température en x et y
 [qx, qy] = gradient(-k * flipud(T));
 
@@ -146,9 +154,10 @@ plot(Tpe);
 
 % Affichage des température en tout point
 subplot(2, 1, 1); % Mettre plusieurs sous graphiques dans la même fenêtre, ici le 1
-colormap(jet); %choix de la palette de couleur : "jet"
-imagesc(T); %affichage sans la grille
-%contourf(T); %affichage avec les courbes de températures
+colormap(jet); %Choix de la palette de couleur : "jet"
+%imagesc(X, flip(Y), T); %Affichage sans la grille
+pcolor(X, Y, T); %Permet d'afficher me maillage 
+%contourf(X, Y, T); %Affichage avec les courbes de températures
 colorbar;
 axis equal; %mettre la même echelle pour les deux axes
 
@@ -161,9 +170,9 @@ end
 
 % Affichage flux de chaleur
 subplot(2, 1, 2); % Mettre plusieurs sous graphiques dans la même fenêtre, ici le 2
-contour(flipud(T)); % Tracer les courbes de niveaux de la matrice T
+contour(X, Y, T,10); % Tracer les courbes de niveaux de la matrice T, le '8' correspond au nombre de courbes desirées, 'flip()' permet d'inverser un vecteur
 hold on;
-quiver(qx, qy); % Tracer les vecteurs de flux de chaleur représentés par les composantes qx et qy
+quiver(X, flip(Y), qx, qy, 2); % Tracer les vecteurs de flux de chaleur représentés par les composantes qx et qy
 title('Flux de chaleur et isotherme');
 
 %Affichage de la matrice avec les temperatures exactes
