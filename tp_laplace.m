@@ -68,6 +68,9 @@ while (testpr>precision)
         end
         LargeurTampon = LargeurTampon - dy1;
         Y(i) = LargeurTampon;
+        if i>=imax
+            Y(i)=0;
+        end
         
 
         % dy1 représente la distance entre la maille et celle juste au-dessus (la précédante), pour la première maille, celle distance vaut 0 mais il n'y a pas de précédante, ce n'est donc pas un prblème
