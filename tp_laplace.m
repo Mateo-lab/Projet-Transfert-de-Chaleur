@@ -10,6 +10,9 @@ jmax=120; % Nombre de noeuds en longueur
 T = zeros(imax,jmax);  % Matrice des températures
 Tpe = zeros(1,jmax);   % Vecteur des températures sur la surface extérieur de la vitre
 
+        %Initialisation vecteurs positions
+X = dx:dx:largueur; %contient les valeurs pour
+Y = 1:imax;
         % Dimension de la surface étudié en mètre
 hauteur=0.005; % Epaisseur de la vitre
 largueur=0.014; % Moitié de la distane entre deux source
@@ -44,6 +47,7 @@ while (testpr>precision)
     % La boucle 'While' va permettre de faire le tour de la matrice autant de fois que besoin pour avoir la
     % précision demandé
   testpr=0;
+  LargeurTampon = 0.005; %permet de créer la matrice Y
     for i = 1:imax
     
         %Partie du pas variable
@@ -61,8 +65,12 @@ while (testpr>precision)
         elseif i > (1+imax/2)
             dy1=(hauteur*4/(imax^2))*(imax-i+1);
             dy2=(hauteur*4/(imax^2))*(imax-i);
-        end 
-       
+        end
+        LargeurTampon = LargeurTampon - dy1;
+        Y(i) = LargeurTampon;
+        if i>=imax
+            Y(i)=0;
+        end
         for j = 1:jmax
             testT = T(i, j);
 
@@ -121,24 +129,32 @@ while (testpr>precision)
 
 end
 
-%PARTIE AFFICHAGE 
-            % Affichage de la température sur la vitre extérieur
-plot(Tpe);
+      % Calcul des gradients de la température en x et y
+[qx, qy] = gradient(-k * flipud(T));
 
-            % Affichage des température en tout point
-
-colormap(jet); %choix de la palette de couleur : "jet"
-imagesc(T); %affichage sans la grille
-%contourf(T); %affichage avec les courbes de températures
-colorbar;
-axis equal; %mettre la même echelle pour les deux axes
-
-            % Vérification de la température minimum
+      % Vérification de la température minimum
 if T(1,jmax) >= T0 %T(1,jmax) represente la T° en haut à droite, car 1ère ligne et jème colonne
     title(sprintf('Itération = %d, Température minimum respecté',iter)); 
 else
     title(sprintf('Itération = %d, Température minimum non respecté',iter)); 
 end
-% affichage de la matrice avec les temperatures exactes
 
-%disp(T)
+%PARTIE AFFICHAGE 
+
+      % Affichage de la température sur la vitre extérieur
+plot(Tpe);
+
+        % Affichage des température en tout point
+subplot(2, 1, 1); % Mettre plusieurs sous graphiques dans la même fenêtre, ici le 1
+colormap(jet); %Choix de la palette de couleur : "jet"
+%imagesc(X, flip(Y), T); %Affichage sans la grille
+pcolor(X, Y, T); %Permet d'afficher me maillage 
+%contourf(X, Y, T); %Affichage avec les courbes de températures
+
+        % Affichage flux de chaleur
+subplot(2, 1, 2); % Mettre plusieurs sous graphiques dans la même fenêtre, ici le 2
+contour(X, Y, T,10); % Tracer les courbes de niveaux de la matrice T, le '8' correspond au nombre de courbes desirées, 'flip()' permet d'inverser un vecteur
+hold on;
+quiver(X, flip(Y), qx, qy, 2); % Tracer les vecteurs de flux de chaleur représentés par les composantes qx et qy
+title('Flux de chaleur et isotherme');
+
