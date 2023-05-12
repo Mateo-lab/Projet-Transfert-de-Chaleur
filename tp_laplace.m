@@ -66,11 +66,15 @@ while (testpr>precision)
             dy1=(hauteur*4/(imax^2))*(imax-i+1);
             dy2=(hauteur*4/(imax^2))*(imax-i);
         end
-        LargeurTampon = LargeurTampon - dy1;
-        Y(i) = LargeurTampon;
+        LargeurTampon = LargeurTampon - dy1; % Va permettre de contruire le vecteur position Y
+        Y(i) = LargeurTampon;  % On remarque que le vecteur Y est contruit à l'envers, il commence à 0.005 et non à 0
+                               % Il sera inversé lors de son utilisation.
         if i>=imax
             Y(i)=0;
         end
+        
+        %Partie Calcul
+        
         for j = 1:jmax
             testT = T(i, j);
 
@@ -132,7 +136,7 @@ end
       % Calcul des gradients de la température en x et y
 [qx, qy] = gradient(-k * flipud(T));
 
-      % Vérification de la température minimum
+      % Vérification de la température minimum sur l'extérieur de la vitre
 if T(1,jmax) >= T0 %T(1,jmax) represente la T° en haut à droite, car 1ère ligne et jème colonne
     title(sprintf('Itération = %d, Température minimum respecté',iter)); 
 else
@@ -146,10 +150,9 @@ plot(Tpe);
 
         % Affichage des température en tout point
 subplot(2, 1, 1); % Mettre plusieurs sous graphiques dans la même fenêtre, ici le 1
-colormap(jet); %Choix de la palette de couleur : "jet"
-%imagesc(X, flip(Y), T); %Affichage sans la grille
-pcolor(X, Y, T); %Permet d'afficher me maillage 
-%contourf(X, Y, T); %Affichage avec les courbes de températures
+colormap(jet); % Choix de la palette de couleur : "jet"
+%imagesc(X, flip(Y), T); % Affichage sans la grille, 'flip()' permet d'inverser un vecteur
+pcolor(X, Y, T); % Permet d'afficher me maillage 
 
         % Affichage flux de chaleur
 subplot(2, 1, 2); % Mettre plusieurs sous graphiques dans la même fenêtre, ici le 2
